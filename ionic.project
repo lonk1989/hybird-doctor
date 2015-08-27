@@ -1,0 +1,12 @@
+{
+  "name": "hybird",
+  "app_id": "d2012ac4",
+  "gulpStartupTasks": [
+    "sass",
+    "watch"
+  ],
+  "watchPatterns": [
+    "www/**/*",
+    "!www/lib/**/*"
+  ]
+}

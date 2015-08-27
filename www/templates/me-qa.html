@@ -1,0 +1,15 @@
+<ion-view view-title="常见问题">
+    <ion-nav-buttons side="left">
+        <button class="button button-clear icon" ng-class="{false :'ion-android-arrow-back', true: 'ion-ios-arrow-back'}[isIOS]" ng-show="showHistoryBack" ng-click="historyBack()"></button>
+    </ion-nav-buttons>
+    <ion-content class="main advisory">
+        <ul class="list">
+            <li class="item item-text-wrap" ng-repeat="item in qaList">
+                <a ui-sref="tab.qa-detail({id: {{item.article_id}}})" style="color:#666;">
+                    {{$index + 1}}、 {{item.title}}
+                </a>
+            </li>
+        </ul>
+        <p class="empty-title" ng-hide="qaList.length>0">暂无任何内容</p>
+    </ion-content>
+</ion-view>

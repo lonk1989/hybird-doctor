@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="starter">
+
+<head>
+    <meta charset="UTF-8">
+    <title>方案</title>
+    <script src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/angular.js/1.4.4/angular.js"></script>
+    <script src="http://cdn.bootcss.com/angular-local-storage/0.2.2/angular-local-storage.min.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        var JAVA_URL = "http://testmanage.aiganyisheng.net/";
+    </script>
+</head>
+
+<body ng-controller="MainCtrl">
+    <!-- Nav -->
+    <div class="container">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">方案逻辑</a>
+                </div>
+                <button type="button" class="btn btn-default navbar-btn" data-toggle="modal" data-target="#logicModal" ng-click="addLogic()">添加</button>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{currProductName}} <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" ng-click="changePlan(item.productCode, item.productName)" ng-repeat="item in list">{{item.productName}}</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <!-- Logic -->
+        <div class="row">
+            <div class="col-sm-12" ng-repeat="item in logic track by $index">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{item.isRet==0?'问题':'结果'}}：{{item.titNum}} {{item.subject}}
+                        <button type="button" class="close" ng-click="removeLogic($index)"><span aria-hidden="true">&times;</span></button>
+                    </h3>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item" ng-repeat="opt in item.opts">{{$index + 1}}、{{opt}}</li>
+                        </ul>
+                        <div wrap-line="item.detail"></div>
+                        <button type="button" class="btn btn-default pull-right" data-toggle="modal" data-target="#logicModal" ng-click="editLogic(item, $index)">编辑</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="logicModal" tabindex="-1" role="dialog" aria-labelledby="logicModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="logicModalLabel">方案逻辑</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <label for="titNum" class="col-sm-2 control-label">题号</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="titNum" ng-model="titNum" placeholder="1.x.x" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject" class="col-sm-2 control-label">题目</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="subject" ng-model="subject" placeholder="" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="options" class="col-sm-2 control-label">类型</label>
+                                <div class="col-sm-10">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="isret" ng-model="isRet" value="0" ng-init="isRet=0"> 问题
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="isret" ng-model="isRet" value="1"> 结果
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="isRet==0">
+                                <label for="options" class="col-sm-2 control-label">选项</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <input type="text" ng-model="opt" placeholder="" class="form-control" />
+                                        <span class="input-group-btn"> 
+                                        <input type="button" ng-click="addOpt()" value="+" class="btn btn-primary" />
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-repeat="item in tempOpts track by $index" ng-show="isRet==0">
+                                <label for="subject" class="col-sm-2 control-label">{{titNum}}.{{$index + 1}}、</label>
+                                <div class="col-sm-10">
+                                    <div class="input-group">
+                                        <input type="text" ng-model="item" ng-change="opts[$index] = item" class="form-control" />
+                                        <span class="input-group-btn">
+                                        <input type="button" ng-click="removeOpt($index)" value="x" class="btn btn-danger" />
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" ng-show="isRet==1">
+                                <label for="options" class="col-sm-2 control-label">详细</label>
+                                <div class="col-sm-10">
+                                    <textarea class="form-control" rows="3" id="detail" ng-model="detail"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button id="saveBtn" type="button" class="btn btn-primary" data-loading-text="Loading..." ng-click="saveLogic()">保存修改</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+    angular.module('starter', ['LocalStorageModule'])
+
+    .directive('wrapLine', function() {
+        return function(scope, elem, attrs) {
+            scope.$watch(attrs.wrapLine, function(value) {
+                if (value) {
+                    elem.html('');
+                    var txt = value.split('\n')
+                    for (var i in txt) {
+                        elem.append('<p>' + txt[i] + '</p>');
+                    }
+                }
+            })
+        }
+    })
+
+    .config(function($httpProvider) {
+        // 头部配置  
+        $httpProvider.defaults.useXDomain = true;
+        $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+        $httpProvider.defaults.headers.post['Accept'] = 'application/json, text/javascript, */*; q=0.01';
+        delete $httpProvider.defaults.headers.common['X-Requested-With'];
+
+        /**  
+         * 重写angular的param方法，使angular使用jquery一样的数据序列化方式  The workhorse; converts an object to x-www-form-urlencoded serialization.  
+         * @param {Object} obj  
+         * @return {String}  
+         */
+        var param = function(obj) {
+            var query = '',
+                name, value, fullSubName, subName, subValue, innerObj, i;
+
+            for (name in obj) {
+                value = obj[name];
+
+                if (value instanceof Array) {
+                    for (i = 0; i < value.length; ++i) {
+                        subValue = value[i];
+                        fullSubName = name + '[' + i + ']';
+                        innerObj = {};
+                        innerObj[fullSubName] = subValue;
+                        query += param(innerObj) + '&';
+                    }
+                } else if (value instanceof Object) {
+                    for (subName in value) {
+                        subValue = value[subName];
+                        fullSubName = name + '[' + subName + ']';
+                        innerObj = {};
+                        innerObj[fullSubName] = subValue;
+                        query += param(innerObj) + '&';
+                    }
+                } else if (value !== undefined && value !== null)
+                    query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
+            }
+
+            return query.length ? query.substr(0, query.length - 1) : query;
+        };
+
+        // Override $http service's default transformRequest  
+        $httpProvider.defaults.transformRequest = [function(data) {
+            return angular.isObject(data) && String(data) !== '[object File]' ? param(data) : data;
+        }];
+    })
+
+    .controller('MainCtrl', function($scope, $http, localStorageService) {
+        _loadList();
+
+        $scope.logic = [];
+        $scope.opts = [];
+
+        $scope.addOpt = function() {
+            $scope.opts.push($scope.opt);
+            $scope.opt = '';
+            $scope.tempOpts = $scope.opts;
+        }
+        $scope.removeOpt = function(index) {
+            $scope.opts.splice(index, 1);
+            $scope.tempOpts = $scope.opts;
+        }
+
+        $scope.addLogic = function() {
+            $scope.isEdit = false;
+            $scope.idx = 0;
+            $scope.isRet = 0;
+            $scope.titNum = '';
+            $scope.subject = '';
+            $scope.opts = $scope.tempOpts = [];
+            $scope.detail = '';
+        }
+
+        $scope.saveLogic = function() {
+            $('#saveBtn').button('loading');
+            if ($scope.isEdit) {
+                $scope.logic[$scope.idx] = {
+                    isRet: $scope.isRet,
+                    titNum: $scope.titNum,
+                    subject: $scope.subject,
+                    opts: $scope.opts,
+                    detail: $scope.detail
+                }
+            } else {
+                $scope.logic.push({
+                    isRet: $scope.isRet,
+                    titNum: $scope.titNum,
+                    subject: $scope.subject,
+                    opts: $scope.opts,
+                    detail: $scope.detail
+                })
+            }
+
+            _saveLogic();
+        }
+
+        $scope.editLogic = function(item, idx) {
+            $scope.isEdit = true;
+            $scope.idx = idx;
+            $scope.isRet = item.isRet;
+            $scope.titNum = item.titNum;
+            $scope.subject = item.subject;
+            $scope.tempOpts = item.opts;
+            $scope.detail = item.detail;
+        }
+
+        $scope.removeLogic = function(index) {
+            if (confirm('确定要删除吗？')) {
+                $scope.logic.splice(index, 1);
+                _saveLogic();
+            }
+        }
+
+        $scope.changePlan = function(productCode, productName) {
+            $scope.currProductCode = productCode;
+            $scope.currProductName = productName;
+            _loadLogic(productCode);
+        }
+
+        function _loadList() {
+            $http.post(JAVA_URL + 'product/app/productList.htm', {
+                sign: '6c362b62fedb0eaa864dc7082ce640fb'
+            })
+
+            .success(function(resp) {
+                if (resp.code === '0') {
+                    $scope.list = resp.data;
+                    $scope.changePlan(resp.data[0].productCode, resp.data[0].productName)
+                } else {
+                    alert('网络连接错误')
+                }
+            })
+
+            .error(function() {
+                alert('网络连接错误')
+            })
+        }
+
+        function _loadLogic(productCode) {
+            $http.post(JAVA_URL + 'product/app/findOptionData.htm', {
+                sign: '8c2f642acc3fe64b72a6fe1065d07d57',
+                productCode: productCode
+            })
+
+            .success(function(resp) {
+                if (resp.code === '0') {
+                    var logicStr = '[]';
+                    if (resp.data[0] !== null && resp.data[0].optionData) {
+                        logicStr = resp.data[0].optionData;
+                    }
+                    $scope.logic = JSON.parse(logicStr);
+                } else {
+                    alert('网络连接错误')
+                }
+            })
+
+            .error(function() {
+                alert('网络连接错误')
+            })
+        }
+
+        function _saveLogic() {
+            var logicStr = JSON.stringify($scope.logic)
+            $http.post(JAVA_URL + 'product/app/updateOptionData.htm', {
+                sign: 'e4b4e072bc44567bf21dfb966e2a1137',
+                productCode: $scope.currProductCode,
+                optionData: logicStr
+            })
+
+            .success(function(resp) {
+                if (resp.code === '0') {
+                    alert('保存成功')
+                    $('#saveBtn').button('reset');
+                    $('#logicModal').modal('hide');
+                } else {
+                    alert('网络连接错误')
+                }
+            })
+
+            .error(function() {
+                alert('网络连接错误')
+            })
+        }
+    })
+    </script>
+</body>
+
+</html>
